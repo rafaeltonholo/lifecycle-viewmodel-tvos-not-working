@@ -1,10 +1,11 @@
-
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
 }
 
 kotlin {
+    applyDefaultHierarchyTemplate()
+
     androidTarget {
         compilations.all {
             kotlinOptions {
@@ -17,9 +18,9 @@ kotlin {
         iosX64(),
         iosArm64(),
         iosSimulatorArm64(),
-//        tvosX64(),
-//        tvosSimulatorArm64(),
-//        tvosArm64(),
+        tvosX64(),
+        tvosSimulatorArm64(),
+        tvosArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "Shared"
@@ -29,7 +30,33 @@ kotlin {
     
     sourceSets {
         commonMain.dependencies {
+            implementation(libs.org.jetbrains.kotlinx.kotlinx.coroutines.core)
+//            implementation(libs.androidx.lifecycle.viewmodel)
+        }
+
+        androidMain.dependencies {
             implementation(libs.androidx.lifecycle.viewmodel)
+        }
+
+        iosMain.dependencies {
+            implementation(libs.androidx.lifecycle.viewmodel)
+        }
+
+        val nonJvmMain by creating {
+            dependsOn(commonMain.get())
+            dependsOn(nativeMain.get())
+            dependencies {
+            }
+        }
+
+        tvosMain {
+            dependsOn(nonJvmMain)
+        }
+    }
+
+    targets.all {
+        compilations.all {
+            compilerOptions.options.freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
 }
